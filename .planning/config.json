@@ -1,0 +1,10 @@
+{
+  "workflow_priority": "Balanced",
+  "research_mode": "Standard Research",
+  "unit_testing": "Optional",
+  "model_profile": "Balanced (Standard)",
+  "research_depth": "Standard (Balanced)",
+  "plan_verification": "Heuristic Review",
+  "work_validation": "Goal Verification",
+  "branching_strategy": "Feature Branches"
+}
