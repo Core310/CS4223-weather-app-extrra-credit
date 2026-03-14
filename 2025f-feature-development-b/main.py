@@ -1,163 +1,132 @@
-import datetime            # For working with dates and times (e.g., today's date)
-import requests            # For making HTTP requests to the OpenWeather API
-import string              # For formatting city names (capitalizing)
-from flask import Flask, render_template, request, redirect, url_for  # Flask web framework
-import os                  # For accessing environment variables
-from dotenv import load_dotenv  # For loading variables from a .env file
+import datetime
+import requests
+import string
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import os
+from dotenv import load_dotenv
 
 # Load environment variables from a .env file in the project root
 load_dotenv()
 
 # OpenWeather API endpoints
-OWM_ENDPOINT = "https://api.openweathermap.org/data/2.5/weather"      # Current weather data
-OWM_FORECAST_ENDPOINT = "https://api.openweathermap.org/data/2.5/forecast"  # 5-day forecast data
-GEOCODING_API_ENDPOINT = "http://api.openweathermap.org/geo/1.0/direct"     # Convert city name to lat/lon
+OWM_ENDPOINT = "https://api.openweathermap.org/data/2.5/weather"
+OWM_FORECAST_ENDPOINT = "https://api.openweathermap.org/data/2.5/forecast"
+GEOCODING_API_ENDPOINT = "http://api.openweathermap.org/geo/1.0/direct"
 
 # Read the OpenWeather API key from environment variable
 api_key = os.getenv("OWM_API_KEY")
-# Alternative way to access env var:
-# api_key = os.environ.get("OWM_API_KEY")
 
 # Create the Flask app instance
 app = Flask(__name__)
+CORS(app) # Enable CORS for all routes
 
+def process_forecast(forecast_list):
+    """Group 3-hour intervals into 5 daily summaries (Max/Min Temp, Icon)"""
+    by_day = {}
+    for item in forecast_list:
+        dt = datetime.datetime.fromtimestamp(item['dt'])
+        day = dt.strftime('%Y-%m-%d')
+        if day not in by_day:
+            by_day[day] = []
+        by_day[day].append(item)
 
-# Display home page and handle city search form submission
-@app.route("/", methods=["GET", "POST"])
-def home():
+    daily_summaries = []
+    sorted_days = sorted(by_day.keys())
+    
+    # Skip today if we have enough data for the next 5 days
+    start_idx = 1 if len(sorted_days) > 5 else 0
+    
+    for i in range(start_idx, start_idx + 5):
+        if i >= len(sorted_days):
+            break
+        day = sorted_days[i]
+        day_data = by_day[day]
+        
+        max_temp = max(item['main']['temp_max'] for item in day_data)
+        min_temp = min(item['main']['temp_min'] for item in day_data)
+        # Get icon from middle of the day entry
+        icon = day_data[len(day_data)//2]['weather'][0]['icon']
+        day_name = datetime.datetime.strptime(day, '%Y-%m-%d').strftime('%a')
+        
+        daily_summaries.append({
+            "day": day_name,
+            "date": day,
+            "temp_max": round(max_temp),
+            "temp_min": round(min_temp),
+            "icon": icon,
+            "description": day_data[len(day_data)//2]['weather'][0]['main']
+        })
+    return daily_summaries
+
+@app.route("/api/weather/<city>")
+def get_weather_api(city):
     """
-    Home route:
-    - GET: render the search page (index.html)
-    - POST: get the city name from the form and redirect to /<city>
+    JSON API endpoint for weather data.
     """
-    if request.method == "POST":
-        # Get the city name entered by the user in the form with name="search"
-        city = request.form.get("search")
-        # Redirect to the get_weather route with the city in the URL
-        return redirect(url_for("get_weather", city=city))
-    # For GET requests, just render the home page with the search form
-    return render_template("index.html")
+    try:
+        city_name = string.capwords(city)
+        
+        # 1. Geocoding
+        location_params = {"q": city_name, "appid": api_key, "limit": 1}
+        location_response = requests.get(GEOCODING_API_ENDPOINT, params=location_params)
+        
+        if location_response.status_code != 200:
+            return jsonify({"error": f"Geocoding API Error: {location_response.json().get('message', 'Unknown Error')}"}), location_response.status_code
+            
+        location_data = location_response.json()
 
+        if not location_data or (isinstance(location_data, list) and len(location_data) == 0):
+            return jsonify({"error": "City not found"}), 404
 
-# Display weather forecast for a specific city using data from OpenWeather API
-@app.route("/<city>", methods=["GET", "POST"])
-def get_weather(city):
-    """
-    Weather route:
-    - Takes a city from the URL
-    - Uses OpenWeather's Geocoding API to get latitude & longitude
-    - Uses those coordinates to fetch current weather and 5-day forecast
-    - Renders city.html with all the weather info
-    """
+        if isinstance(location_data, dict) and location_data.get('cod') and location_data.get('cod') != 200:
+             return jsonify({"error": location_data.get('message', 'API Error')}), int(location_data.get('cod'))
 
-    # Format city name (e.g., "oklahoma city" -> "Oklahoma City") for display
-    city_name = string.capwords(city)
-
-    # Get today's date and format it nicely for display (e.g., "Friday, November 21")
-    today = datetime.datetime.now()
-    current_date = today.strftime("%A, %B %d")
-
-    # Build parameters to get latitude and longitude based on the city name
-    location_params = {
-        "q": city_name,   # City name (e.g., "Oklahoma City")
-        "appid": api_key, # API key for authentication
-        "limit": 3,       # Max number of location results to return
-    }
-
-    # Call the Geocoding API to convert city name to coordinates
-    location_response = requests.get(GEOCODING_API_ENDPOINT, params=location_params)
-    location_data = location_response.json()
-
-    # If the city is not found or the API returns an empty list,
-    # redirect user to the error page instead of crashing with IndexError
-    if not location_data:
-        return redirect(url_for("error"))
-    else:
-        # Take the first result's latitude and longitude
         lat = location_data[0]['lat']
         lon = location_data[0]['lon']
+        actual_city_name = location_data[0]['name']
 
-    # Build parameters for current weather and forecast requests
-    weather_params = {
-        "lat": lat,          # Latitude from geocoding
-        "lon": lon,          # Longitude from geocoding
-        "appid": api_key,    # API key
-        "units": "metric",   # Use metric units (°C, m/s)
-    }
+        # 2. Current Weather
+        weather_params = {"lat": lat, "lon": lon, "appid": api_key, "units": "metric"}
+        weather_response = requests.get(OWM_ENDPOINT, weather_params)
+        weather_response.raise_for_status()
+        weather_data = weather_response.json()
 
-    # Request current weather data
-    weather_response = requests.get(OWM_ENDPOINT, weather_params)
-    # Raise an exception if the API request failed (e.g., invalid key, rate limit, etc.)
-    weather_response.raise_for_status()
-    # Parse the JSON response into a Python dict
-    weather_data = weather_response.json()
+        # 3. 5-Day Forecast
+        forecast_response = requests.get(OWM_FORECAST_ENDPOINT, weather_params)
+        forecast_response.raise_for_status()
+        forecast_data = forecast_response.json()
 
-    # Extract the current weather details from the response
-    current_temp = round(weather_data['main']['temp'])         # Current temperature in °C
-    current_weather = weather_data['weather'][0]['main']       # Weather description (e.g., "Clouds")
-    min_temp = round(weather_data['main']['temp_min'])         # Today's minimum temperature
-    max_temp = round(weather_data['main']['temp_max'])         # Today's maximum temperature
-    wind_speed = weather_data['wind']['speed']                 # Current wind speed
+        # Consolidate Response
+        response = {
+            "city": actual_city_name,
+            "country": location_data[0].get('country'),
+            "current": {
+                "temp": round(weather_data['main']['temp']),
+                "feels_like": round(weather_data['main']['feels_like']),
+                "min_temp": round(weather_data['main']['temp_min']),
+                "max_temp": round(weather_data['main']['temp_max']),
+                "humidity": weather_data['main']['humidity'],
+                "pressure": weather_data['main']['pressure'],
+                "visibility": weather_data.get('visibility', 0) // 1000,
+                "wind_speed": weather_data['wind']['speed'],
+                "main": weather_data['weather'][0]['main'],
+                "description": weather_data['weather'][0]['description'],
+                "icon": weather_data['weather'][0]['icon'],
+                "sunrise": weather_data['sys']['sunrise'],
+                "sunset": weather_data['sys']['sunset'],
+                "dt": weather_data['dt']
+            },
+            "forecast": process_forecast(forecast_data['list'])
+        }
 
-    # Request 5-day / 3-hour interval forecast data
-    forecast_response = requests.get(OWM_FORECAST_ENDPOINT, weather_params)
-    forecast_data = forecast_response.json()
+        return jsonify(response)
 
-    # The forecast endpoint returns data for every 3 hours.
-    # Filter to only entries at 12:00:00 each day to get a single value per day.
-    five_day_temp_list = [
-        round(item['main']['temp'])
-        for item in forecast_data['list']
-        if '12:00:00' in item['dt_txt']
-    ]
+    except requests.exceptions.HTTPError as e:
+        return jsonify({"error": f"OpenWeather API Error: {str(e)}"}), 502
+    except Exception as e:
+        return jsonify({"error": f"Internal Server Error: {str(e)}"}), 500
 
-    # Similarly, extract the weather description at 12:00:00 for each of the next 5 days
-    five_day_weather_list = [
-        item['weather'][0]['main']
-        for item in forecast_data['list']
-        if '12:00:00' in item['dt_txt']
-    ]
-
-    # Build a list of the next 5 dates (today + 4 more days)
-    five_day_unformatted = [
-        today,
-        today + datetime.timedelta(days=1),
-        today + datetime.timedelta(days=2),
-        today + datetime.timedelta(days=3),
-        today + datetime.timedelta(days=4),
-    ]
-
-    # Format those dates as short weekday names (e.g., "Mon", "Tue")
-    five_day_dates_list = [date.strftime("%a") for date in five_day_unformatted]
-
-    # Render the city.html template, passing all the weather data to be displayed
-    return render_template(
-        "city.html",
-        city_name=city_name,
-        current_date=current_date,
-        current_temp=current_temp,
-        current_weather=current_weather,
-        min_temp=min_temp,
-        max_temp=max_temp,
-        wind_speed=wind_speed,
-        five_day_temp_list=five_day_temp_list,
-        five_day_weather_list=five_day_weather_list,
-        five_day_dates_list=five_day_dates_list,
-    )
-
-
-# Display error page for invalid city input or missing coordinates
-@app.route("/error")
-def error():
-    """
-    Error route:
-    - Renders a simple error template when something goes wrong
-      (e.g., invalid city entered by the user).
-    """
-    return render_template("error.html")
-
-
-# Run the Flask development server when this file is executed directly
 if __name__ == "__main__":
-    # debug=True enables auto-reload on code changes and shows detailed error pages
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
+
