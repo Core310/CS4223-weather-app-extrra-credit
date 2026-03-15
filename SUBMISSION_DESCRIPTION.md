@@ -30,9 +30,57 @@ As specified in the `REQUIREMENTS.md` and the challenge PDF, the following funct
 
 ---
 
-## 3. Technical Implementation Details
+## 3. Repository File Layouts
 
-### 3.1 Obsidian-Style Code Examples
+### 3.1 Repository C: Tkinter Desktop Application
+The desktop application is structured as a standalone Python project using the Tkinter framework.
+
+```text
+2025f-feature-development-c/
+├── app.py              # Main application entry point; handles UI and API logic.
+├── config.ini          # Configuration file for OpenWeather API credentials.
+├── requirements.txt    # Python dependencies (requests, Pillow, etc.).
+├── verify_ui.py        # Manual verification test plan and UI audit steps.
+├── Icons/              # Weather-specific icons used for dynamic rendering.
+│   ├── clear.png, rain.png, Haze.png, etc.
+└── Images/             # UI branding assets (backgrounds, borders, buttons).
+    ├── sunrise.png, sunset.png, weather_icon.ico, etc.
+```
+
+| File | Description |
+|:---|:---|
+| `app.py` | Refactored main loop. Implements recursive theming, threaded API calls, and forecast rendering. |
+| `config.ini` | Secure storage for the API key used by the `requests` module. |
+| `verify_ui.py` | Documentation of the behavioral test cases for visual validation. |
+
+### 3.2 Repository B: Decoupled Web Application
+The web application utilizes a modern decoupled architecture with a Python backend and a React frontend.
+
+```text
+2025f-feature-development-b/
+├── main.py             # Flask JSON API; handles geocoding and data aggregation.
+├── requirements.txt    # Backend dependencies (Flask, Flask-CORS, Dotenv).
+├── .env                # Environment variables for backend secrets.
+└── frontend/           # React Single Page Application (SPA).
+    ├── src/
+    │   ├── App.tsx     # Main React component; handles state, fetching, and theming.
+    │   ├── main.tsx    # React entry point and DOM mounting.
+    │   └── index.css   # Tailwind CSS v4 entry point.
+    ├── vite.config.ts  # Build configuration for the Vite toolchain.
+    └── package.json    # Frontend dependencies and scripts.
+```
+
+| File | Description |
+|:---|:---|
+| `main.py` | Refactored REST API. Processes OpenWeather 3-hour chunks into 5 daily summaries. |
+| `App.tsx` | Functional component using hooks. Implements snarky logic and Tailwind-based dynamic themes. |
+| `.env` | Stores the `OWM_API_KEY`, loaded automatically by `python-dotenv`. |
+
+---
+
+## 4. Technical Implementation Details
+
+### 4.1 Obsidian-Style Code Examples
 
 > [!info] Dynamic Theme Mapping (React)
 > The following snippet demonstrates how Tailwind CSS v4 utility classes are dynamically computed based on both weather condition and night-time detection.
@@ -79,20 +127,6 @@ const getSuggestion = (data: WeatherData) => {
   // ... other conditions ...
 };
 ```
-
----
-
-## 4. Architecture & Engineering
-
-### 4.1 Decoupled Web Architecture (Repo B)
-The Flask application was refactored from a monolithic SSR app into a **RESTful JSON API**. 
-- **Endpoint:** `GET /api/weather/<city>`
-- **Response:** Consolidates current weather, geocoding results, and processed 5-day summaries.
-- **Frontend:** React SPA built with **Vite** and **Tailwind CSS v4**, utilizing `fetch` for asynchronous state updates.
-
-### 4.2 Stability Improvements (Repo C)
-- **GUI Threading:** Ensured all UI operations remain on the main thread, while using surgical threading for blocking I/O (API requests).
-- **Memory Optimization:** Refactored `set_image` to reuse existing widget instances, preventing memory leaks during frequent updates.
 
 ---
 
