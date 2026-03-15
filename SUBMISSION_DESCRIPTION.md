@@ -96,25 +96,57 @@ The Flask application was refactored from a monolithic SSR app into a **RESTful 
 
 ---
 
-## 5. Verification & Testing Results
+## 5. Testing Methodology & Verification Suites
 
-### 5.1 UAT Session: Repository B (Web App)
-| Test Case | Description | Result |
-|:---|:---|:---|
-| 1 | Search and 5-Day Forecast Display | **PASSED** |
-| 2 | Dynamic Theme Transition (Clear vs Night) | **PASSED** |
-| 3 | Weather Suggestions (Snarky Remarks) | **PASSED** |
-| 4 | Error Handling (Invalid City Feedback) | **PASSED** |
+Due to the heavy visual nature of the GUI components (Tkinter and React), testing was structured around **Behavioral User Acceptance Testing (UAT)** and **Edge Case Specification**.
 
-### 5.2 UAT Session: Repository C (Desktop App)
-| Test Case | Description | Result |
-|:---|:---|:---|
-| 1 | Search for Sunny/Rainy City Themes | **PASSED** |
-| 2 | Dynamic Asset Loading (Icons from CDN) | **PASSED** |
-| 3 | Suggestion Logic & Thermal Bounds | **PASSED** |
-| 4 | Reset Button & State Clearing | **PASSED** |
+### 5.1 Test Specification Logic
+Each test was written following a "Feature-Action-Verification" (FAV) model to ensure deterministic results across environments.
+
+> [!example] Test Specification Template
+> - **Input:** Specific city known for target weather condition.
+> - **Action:** Search trigger (Enter key or Button click).
+> - **Validation Criteria:** Specific Hex code/CSS class application and UI component visibility.
+
+### 5.2 Verification Suites
+
+#### A. Thermal Threshold Suite
+Designed to verify that the personality-driven suggestion engine triggers at correct boundaries.
+- **Cold Boundary (< 10°C):** Tested with cities like Anchorage to ensure "wear a jacket" logic triggers.
+- **Hot Boundary (> 30°C):** Tested with cities like Dubai to verify "stay hydrated" warnings.
+
+#### B. Visual Integrity Suite
+Focused on the correct rendering of complex UI elements across platforms.
+- **Icon Rendering:** Verified that both apps correctly fetch and display OpenWeather icon codes from the CDN.
+- **Night Detection:** Specified a test for cities currently in their night cycle (checked via OpenWeather icon 'n' suffix) to verify the Dark Mode transition.
+
+#### C. Robustness & Error Handling Suite
+Specified to ensure system resilience against invalid user input and network failures.
+- **Non-Geocodable Input:** Entering gibberish (e.g., "asdfgh") to verify the 404 alert display.
+- **Null Input:** Clicking search with an empty box to verify graceful validation (warning popups).
+- **API Unauthorized:** Simulating a missing API key to verify the 401 error message guidance.
 
 ---
 
-## 6. Conclusion
+## 6. Verification Results Summary
+
+### 6.1 Repository B (Web App)
+| Test ID | Scenario | Verification Method | Result |
+|:---|:---|:---|:---|
+| T-B1 | Search & 5-Day Grid | Visual check of Flexbox layout | **PASSED** |
+| T-B2 | Dynamic Theme (Clear/Night) | CSS Inspector check for bg-class | **PASSED** |
+| T-B3 | Snarky Suggestions | DOM content string match | **PASSED** |
+| T-B4 | Error Feedback | Red alert component visibility | **PASSED** |
+
+### 6.2 Repository C (Desktop App)
+| Test ID | Scenario | Verification Method | Result |
+|:---|:---|:---|:---|
+| T-C1 | Sunny/Rainy Themes | Window config background check | **PASSED** |
+| T-C2 | CDN Icon Loading | io.BytesIO stream verification | **PASSED** |
+| T-C3 | Thermal Suggestions | Suggestion label text update | **PASSED** |
+| T-C4 | State Reset | clearing of all Label and Frame objects | **PASSED** |
+
+---
+
+## 7. Conclusion
 The resulting multi-platform system fully satisfies the challenge requirements. By implementing a decoupled architecture for the web component and stabilizing the desktop application's threading model, we have created a robust, modern, and engaging weather suite. All features, including the "Night Mode" and "Snarky Remarks," were verified across both platforms.
