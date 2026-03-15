@@ -14,15 +14,15 @@ from io import BytesIO
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 WEATHER_THEMES = {
-    "Clear": {"bg": "#FFD700", "suggestion": "It's a sunny day! Perfect for a walk."},
-    "Clouds": {"bg": "#B0C4DE", "suggestion": "A bit cloudy, but still a good day."},
-    "Rain": {"bg": "#4682B4", "suggestion": "Don't forget your umbrella!"},
-    "Drizzle": {"bg": "#778899", "suggestion": "Light rain, a jacket would be nice."},
-    "Snow": {"bg": "#FFFAFA", "suggestion": "Snowfall! Time to build a snowman."},
-    "Thunderstorm": {"bg": "#2F4F4F", "suggestion": "Stormy weather, stay indoors if possible."},
-    "Haze": {"bg": "#F0E68C", "suggestion": "Hazy day, take care."},
-    "Mist": {"bg": "#E6E6FA", "suggestion": "Misty morning, drive safe."},
-    "Night": {"bg": "#2C3E50", "suggestion": "Clear night sky. Have a restful evening."},
+    "Clear": {"bg": "#FFD700", "suggestion": "The sun is actually out. Go outside and touch some grass, if you can find any."},
+    "Clouds": {"bg": "#B0C4DE", "suggestion": "A bit cloudy. How dramatic. Try not to ruin the day."},
+    "Rain": {"bg": "#4682B4", "suggestion": "It's raining. Groundbreaking. Grab an umbrella or enjoy the drowned-rat look."},
+    "Drizzle": {"bg": "#778899", "suggestion": "Light rain. A jacket would be nice, but you'll probably forget it anyway."},
+    "Snow": {"bg": "#FFFAFA", "suggestion": "Snowfall! Time to build a snowman and contemplate your life choices."},
+    "Thunderstorm": {"bg": "#2F4F4F", "suggestion": "Stormy weather. Stay indoors and try not to get struck by lightning."},
+    "Haze": {"bg": "#F0E68C", "suggestion": "Hazy day. Just like your future plans."},
+    "Mist": {"bg": "#E6E6FA", "suggestion": "Misty morning. Drive safe, or don't—I'm just a weather app."},
+    "Night": {"bg": "#2C3E50", "suggestion": "Clear night sky. Go to bed; tomorrow is another day to disappoint people."},
     "default": {"bg": "#FFFFFF", "suggestion": ""}
 }
 
@@ -310,9 +310,9 @@ class Weather(Tk):
             suggestion_text = theme["suggestion"]
 
             if temp < 10:
-                suggestion_text = "It's quite cold! Wear something warm."
+                suggestion_text = "It's freezing. Put on a jacket; hypothermia isn't a fashion statement."
             elif temp > 30:
-                suggestion_text = "It's hot outside! Stay hydrated."
+                suggestion_text = "It's a furnace out there. Drink water, or don't—I'm not your life coach."
 
             self.update_theme(color)
             self.suggestion['text'] = suggestion_text

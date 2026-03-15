@@ -60,11 +60,11 @@ const App: React.FC = () => {
   const getSuggestion = (data: WeatherData) => {
     const main = data.current.main;
     const temp = data.current.temp;
-    if (main === 'Rain' || main === 'Drizzle') return "It's raining - don't forget an umbrella.";
-    if (temp < 10) return "Cold weather today - wear a jacket.";
-    if (temp > 30) return "Stay hydrated, it's quite hot outside.";
-    if (main === 'Clear') return "Perfect weather for a walk.";
-    return `Enjoy your day in ${data.city}!`;
+    if (main === 'Rain' || main === 'Drizzle') return "It's raining. Groundbreaking. Grab an umbrella or enjoy the drowned-rat look.";
+    if (temp < 10) return "It's freezing. Put on a jacket; hypothermia isn't a fashion statement.";
+    if (temp > 30) return "It's a furnace out there. Drink water, or don't—I'm not your life coach.";
+    if (main === 'Clear') return "The sun is actually out. Go outside and touch some grass, if you can find any.";
+    return `It's a day in ${data.city}. Try not to ruin it.`;
   };
 
   const getThemeClass = (main: string, icon: string) => {
