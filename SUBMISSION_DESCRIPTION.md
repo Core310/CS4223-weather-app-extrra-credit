@@ -1,7 +1,7 @@
 # Weather App Challenge Technical Report
 
-**Student Name:** [Your Name]
-**Student ID:** [Your Student ID]
+**Name:** arika khor
+**ID:** 113551048
 **Project Title:** Multi Platform Weather System Extensions for Repo B and Repo C
 
 ## Project Overview
@@ -10,11 +10,11 @@ This project involved extending two different weather applications with new feat
 ## Requirements Mapping
 The following features were implemented and verified based on the requirements document.
 
-| Requirement | Implementation Status |
-|:---|:---|
-| Dynamic Background Themes | Finished. React uses Tailwind classes and Tkinter uses recursive updates. |
-| 5 Day Forecast Extension | Finished. Data is fetched from OpenWeather and processed into daily summaries. |
-| Weather Based Suggestions | Finished. Personality driven engine added to both user interfaces. |
+| Requirement |
+|:---|
+| Dynamic Background Themes |
+| 5 Day Forecast Extension |
+| Weather Based Suggestions |
 
 ## Repository File Layouts
 
