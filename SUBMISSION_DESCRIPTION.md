@@ -1,5 +1,7 @@
 # Weather App Challenge Technical Report
 
+[https://github.com/Core310/CS4223-weather-app-extrra-credit/tree/master](https://github.com/Core310/CS4223-weather-app-extrra-credit/tree/master)
+
 **Name:** arika khor
 **ID:** 113551048
 **Project Title:** Multi Platform Weather System Extensions for Repo B and Repo C
