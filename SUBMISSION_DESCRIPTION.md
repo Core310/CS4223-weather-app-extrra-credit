@@ -16,6 +16,14 @@ The following features were implemented and verified based on the requirements d
 | 5 Day Forecast Extension |
 | Weather Based Suggestions |
 
+## Software Maintenance Insight
+
+### Documentation and Readability
+Maintaining these applications required clear documentation of how data flows from the OpenWeather API to the user interface. In Repository B, the backend logic for processing 3 hour forecast chunks into daily summaries was documented to ensure future developers understand the aggregation logic. In Repository C, comments were added to explain the recursive theme updates and the threading model used to keep the UI responsive.
+
+### Refactorability and Scalability
+A major focus was on making the code easy to change in the future. By refactoring Repository B into a decoupled JSON API, the backend can now support other frontends like mobile apps or different web frameworks without changing the core weather logic. For the desktop app, the UI was refactored to reuse widgets instead of recreating them, which makes adding new weather details much simpler. This separation of concerns makes both systems more modular and easier to test or extend.
+
 ## Repository File Layouts
 
 ### Repository C (Desktop App)
