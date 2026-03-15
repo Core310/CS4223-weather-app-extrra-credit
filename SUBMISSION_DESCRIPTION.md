@@ -36,6 +36,8 @@ The desktop app is a standalone Python project using Tkinter.
 *   `Icons/`: Weather specific icons for the UI
 *   `Images/`: UI assets like borders and backgrounds
 
+![](https://github.com/Core310/CS4223-weather-app-extrra-credit/blob/master/Screenshot%202026-03-15%20173630.png?raw=true)
+
 ### Repository B (Web App)
 The web app uses a decoupled architecture with a Python backend and React frontend.
 
@@ -45,6 +47,10 @@ The web app uses a decoupled architecture with a Python backend and React fronte
 *   `frontend/src/App.tsx`: Main React component for state and UI
 *   `frontend/src/index.css`: Tailwind CSS entry point
 *   `frontend/vite.config.ts`: Build config for Vite
+
+![](https://github.com/Core310/CS4223-weather-app-extrra-credit/blob/master/Screenshot%202026-03-15%20173427.png?raw=true)
+![](https://github.com/Core310/CS4223-weather-app-extrra-credit/blob/master/Screenshot%202026-03-15%20173455.png?raw=true)
+
 
 ## Technical Implementation
 
